@@ -1,21 +1,42 @@
+import { useNavigation } from '@react-navigation/native'
 import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { KeyboardAvoidingView, TextInput, TouchableOpacity } from 'react-native-web'
 import { auth } from '../firebase'
+import { NavigationContainer } from '@react-navigation/native'
 
 const LoginScreen = () => {
 
     const [email, setEmail] = React.useState('')
     const [password, setPassword] = React.useState('')
+    const navigation = useNavigation()
+
+    useEffect(() => {
+        const unsuscribe = auth.onAuthStateChanged(user => {
+            if (user) {
+                navigation.navigate("Home")
+            } 
+        })
+        return unsuscribe
+    },[])
+
     const handleSignUp = () => {
         auth
         
         .createUserWithEmailAndPassword(email, password)
         .then(userCredentials=>{
             const user = userCredentials.user;
-            console.log(user.email)
+            console.log('Usuario registrado con',user.email)
         }).catch(error => alert(error.message));
         
+    }
+    const handleLogin = () => {
+        auth
+        .signInWithEmailAndPassword(email, password)
+        .then(userCredentials=>{
+            const user = userCredentials.user;
+            console.log(user.email)
+        }).catch(error => alert(error.message));
     }
   return (
       
@@ -44,7 +65,7 @@ const LoginScreen = () => {
 
         <View style={styles.buttonContainer}>
             <TouchableOpacity
-                onPress={() => {}}
+                onPress={handleLogin}
                 style={styles.button}>
                 <Text style={styles.buttonText}>
                     Login
