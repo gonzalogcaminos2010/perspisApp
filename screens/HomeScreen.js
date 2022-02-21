@@ -1,50 +1,47 @@
-/*nfes*/
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
-import { TouchableOpacity } from 'react-native-web'
-import { auth } from '../firebase'
+import React, { useState, useEffect } from "react";
+import { SafeAreaView } from "react-native";
+import { getProductsApi, getProductDetailsByUrlApi, getDetails } from "../api/productos";
+import ProductosList from "../components/ProductosList";
 
-const HomeScreen = () => {
+
+export default function HomeScreen() {
+
+    const [productos, setProducts] = useState([]);
+    const [nextUrl, setNextUrl] = useState(null);
+  
+    useEffect(() => {
+      (async () => {
+        await loadProducts();
+      })();
+    }, []);
+
+  const loadProducts = async () => {
+    try {
+        const response = await getProductsApi(nextUrl);
+        setNextUrl(response.next);
+  
+        const productsArray = [];
+        for await (const producto of response.results) {
+          const productDetails = await getProductDetailsByUrlApi(producto.url);
+  
+          productsArray.push({
+            id: productDetails.id,
+            nombre: productDetails.nombre,
+            
+          });
+        }
+  
+        setProducts([...productos, ...productsArray]);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+  
+
   return (
-    <View style={styles.container}>
-      
-      <TouchableOpacity
-        style={styles.button}
-
-      
-      >
-          <Text>Sign Out</Text>
-      </TouchableOpacity>
-    </View>
-  )
+    <SafeAreaView>
+      <ProductosList productos={productos} />
+    </SafeAreaView>
+  );
 }
 
-export default HomeScreen
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    button: {
-        backgroundColor:'#0782F9',
-        width:'60%',
-        padding:15,
-        borderRadius:10,
-        marginTop:5,
-        alignItems: 'center',
-    },
-    buttonText: {
-        color:'white',
-        fontWeight:'700',
-        fontSize:16,
-
-    },
-    buttonOutline:{
-        backgroundColor:'white',
-        marginTop:5,
-        borderColor:'#0782F9',
-        borderWidth:2,
-    },
-})
